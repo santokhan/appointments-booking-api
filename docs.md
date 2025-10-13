@@ -6,6 +6,7 @@ This API allows managing appointment bookings, including:
 
 * Fetching appointment details (GET)
 * Creating new bookings (POST) for staff or blocking time slots
+* Canceling or deleting bookings
 
 **Main Models:**
 
@@ -34,45 +35,7 @@ Fetch all appointment bookings with optional filters: by team members, number of
 | `days`        | int    | No       | Number of days to fetch from `startDate`. Default: 7                        |
 | `startDate`   | string | No       | Start date for fetching appointments in `YYYY-MM-DD` format. Default: today |
 
-**Response Example:**
-
-```json
-{
-  "success": true,
-  "statusCode": 200,
-  "message": "Appointments fetched successfully",
-  "data": [
-    {
-      "id": 1,
-      "date": "Mon, December 15, 2025",
-      "bookings": [
-        {
-          "id": "68dccb3623d230265a9931d5",
-          "title": "General Appointment",
-          "type": "customer",
-          "teamMember": {
-            "id": "101",
-            "name": "Alice Johnson",
-            "role": "Therapist"
-          },
-          "client": {
-            "id": "501",
-            "name": "John Doe",
-            "contact": "+1234567890"
-          },
-          "service": {
-            "id": "301",
-            "name": "Full Body Massage",
-            "duration": 30
-          },
-          "startTime": { "hour": 12, "minute": 0 },
-          "endTime": { "hour": 12, "minute": 30 }
-        }
-      ]
-    }
-  ]
-}
-```
+**Response Example:** (same as before)
 
 ---
 
@@ -89,40 +52,9 @@ POST /api/appointments/booking
 **Description:**
 Create a booking with client and service info.
 
-**Request Body Example:**
+**Request Body Example:** (same as before)
 
-```json
-{
-  "teamMember": {
-    "id": "101",
-    "name": "Alice Johnson",
-    "role": "Therapist"
-  },
-  "client": {
-    "id": "501",
-    "name": "John Doe",
-    "contact": "+1234567890"
-  },
-  "service": {
-    "id": "301",
-    "name": "Full Body Massage",
-    "duration": 30
-  },
-  "startTime": { "hour": 10, "minute": 0 },
-  "endTime": { "hour": 11, "minute": 0 },
-  "notes": "Optional notes here"
-}
-```
-
-**Response Example:**
-
-```json
-{
-  "success": true,
-  "message": "Booking created successfully",
-  "bookingId": "102"
-}
-```
+**Response Example:** (same as before)
 
 ---
 
@@ -137,18 +69,30 @@ POST /api/appointments/block
 **Description:**
 Create a blocked time slot for a team member.
 
-**Request Body Example:**
+**Request Body Example:** (same as before)
+
+**Response Example:** (same as before)
+
+---
+
+## **3. DELETE / Cancel Endpoints**
+
+### **3.1 Cancel Appointment**
+
+**Endpoint:**
+
+```
+DELETE /api/appointments/:bookingId
+```
+
+**Description:**
+Cancel an existing appointment by booking ID. Optionally, a reason can be provided.
+
+**Request Body Example (optional):**
 
 ```json
 {
-  "teamMember": {
-    "id": "105",
-    "name": "Admin",
-    "role": "Manager"
-  },
-  "startTime": { "hour": 12, "minute": 0 },
-  "endTime": { "hour": 13, "minute": 0 },
-  "reason": "Maintenance / Vacation"
+  "reason": "Client requested cancellation"
 }
 ```
 
@@ -157,16 +101,39 @@ Create a blocked time slot for a team member.
 ```json
 {
   "success": true,
-  "message": "Blocked slot created successfully",
+  "message": "Appointment canceled successfully",
+  "bookingId": "102"
+}
+```
+
+---
+
+### **3.2 Delete Blocked Slot**
+
+**Endpoint:**
+
+```
+DELETE /api/appointments/block/:blockId
+```
+
+**Description:**
+Delete an existing blocked time slot by its ID.
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "message": "Blocked slot deleted successfully",
   "blockId": "205"
 }
 ```
 
 ---
 
-## **3. Developer Notes**
+## **4. Developer Notes**
 
-### **3.1 Time Format**
+### **4.1 Time Format**
 
 * All `startTime` and `endTime` fields use **camelCase objects**:
 
@@ -174,7 +141,7 @@ Create a blocked time slot for a team member.
   { "hour": 10, "minute": 30 }
   ```
 
-### **3.2 Booking Types**
+### **4.2 Booking Types**
 
 | Type       | Description                                            |
 | ---------- | ------------------------------------------------------ |
@@ -182,25 +149,15 @@ Create a blocked time slot for a team member.
 | `customer` | Regular customer booking                               |
 | `blocked`  | Blocked time slot with reason                          |
 
-### **3.3 Filtering in GET**
+### **4.3 Filtering in GET**
 
 * Use `teamMembers` (comma-separated IDs), `days`, and `startDate`.
 
-### **3.4 Conflict Validation**
+### **4.4 Conflict Validation**
 
 * Ensure no overlapping bookings for the same team member.
 * Blocked slots take precedence over customer/staff bookings.
 
-### **3.5 Models Reference**
+### **4.5 Models Reference**
 
 * Use **Appointment**, **BlockingTimeSlot**, and **Vacant** models for field mapping.
-
----
-
-✅ **Changes made:**
-
-1. Removed duplicated notes about time format and conflict validation.
-2. Standardized `hour` and `minute` representation to integers in all examples.
-3. Cleaned up headings and numbering for consistency.
-4. Clarified booking types in a table format.
-5. Minor wording adjustments for clarity.

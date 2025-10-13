@@ -1,4 +1,4 @@
-# **Appointment Booking API Documentation (with Team, Client, and Service Info)**
+# **Appointment Booking API Documentation (Team, Client, and Service Info)**
 
 ## **Overview**
 
@@ -7,10 +7,10 @@ This API allows managing appointment bookings, including:
 * Fetching appointment details (GET)
 * Creating new bookings (POST) for staff or blocking time slots
 
-We have three main models for reference:
+**Main Models:**
 
 1. **Appointment** – standard booking model
-2. **Blocking Time Slot** – to block specific periods
+2. **BlockingTimeSlot** – to block specific periods
 3. **Vacant** – optional reference for available slots
 
 ---
@@ -30,107 +30,87 @@ Fetch all appointment bookings with optional filters: by team members, number of
 
 | Parameter     | Type   | Required | Description                                                                 |
 | ------------- | ------ | -------- | --------------------------------------------------------------------------- |
-| `teamMembers` | string | No       | Comma-separated list of team member IDs to filter by.                       |
-| `days`        | int    | No       | Number of days to fetch from the `startDate`. Default: 7                    |
+| `teamMembers` | string | No       | Comma-separated list of team member IDs to filter by                        |
+| `days`        | int    | No       | Number of days to fetch from `startDate`. Default: 7                        |
 | `startDate`   | string | No       | Start date for fetching appointments in `YYYY-MM-DD` format. Default: today |
 
 **Response Example:**
 
 ```json
 {
-    "success": true,
-    "statusCode": 200,
-    "message": "Appointments fetched successfully",
-    "data": [
+  "success": true,
+  "statusCode": 200,
+  "message": "Appointments fetched successfully",
+  "data": [
+    {
+      "id": 1,
+      "date": "Mon, December 15, 2025",
+      "bookings": [
         {
-            "id": 1,
-            "date": "Mon, December 15, 2025",
-            "bookings": [
-                {
-                    "id": "68dccb3623d230265a9931d5",
-                    "title": "General Appointment",
-                    "type": "customer",
-                    "teamMember": {
-                        "id": "101",
-                        "name": "Alice Johnson",
-                        "role": "Therapist"
-                    },
-                    "client": {
-                        "id": "501",
-                        "name": "John Doe",
-                        "contact": "+1234567890"
-                    },
-                    "service": {
-                        "id": "301",
-                        "name": "Full Body Massage",
-                        "duration": 30
-                    },
-                    "startTime": { "hour": "12", "minute": "00" },
-                    "endTime": { "hour": "12", "minute": "30" }
-                }
-            ]
+          "id": "68dccb3623d230265a9931d5",
+          "title": "General Appointment",
+          "type": "customer",
+          "teamMember": {
+            "id": "101",
+            "name": "Alice Johnson",
+            "role": "Therapist"
+          },
+          "client": {
+            "id": "501",
+            "name": "John Doe",
+            "contact": "+1234567890"
+          },
+          "service": {
+            "id": "301",
+            "name": "Full Body Massage",
+            "duration": 30
+          },
+          "startTime": { "hour": 12, "minute": 0 },
+          "endTime": { "hour": 12, "minute": 30 }
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
 
 ---
 
-## **2. Create Appointment Booking**
+## **2. POST Endpoints for Staff**
+
+### **2.1 Create Staff Booking**
 
 **Endpoint:**
 
 ```
-POST /api/appointments
+POST /api/appointments/booking
 ```
 
 **Description:**
-Create a new booking. Booking type can be either:
+Create a booking with client and service info.
 
-* `staff` – a staff booking
-* `blocked` – a blocked time slot
-
-**Request Body:**
-
-### **Staff Booking Example**
+**Request Body Example:**
 
 ```json
 {
-    "type": "staff",
-    "teamMember": {
-        "id": "101",
-        "name": "Alice Johnson",
-        "role": "Therapist"
-    },
-    "client": {
-        "id": "501",
-        "name": "John Doe",
-        "contact": "+1234567890"
-    },
-    "service": {
-        "id": "301",
-        "name": "Full Body Massage",
-        "duration": 30
-    },
-    "startTime": { "hour": 10, "minute": 0 },
-    "endTime": { "hour": 11, "minute": 0 },
-    "notes": "Optional notes here"
-}
-```
-
-### **Blocked Time Slot Example**
-
-```json
-{
-    "type": "blocked",
-    "teamMember": {
-        "id": "105",
-        "name": "Admin",
-        "role": "Manager"
-    },
-    "startTime": { "hour": 12, "minute": 0 },
-    "endTime": { "hour": 13, "minute": 0 },
-    "reason": "Maintenance / Vacation"
+  "teamMember": {
+    "id": "101",
+    "name": "Alice Johnson",
+    "role": "Therapist"
+  },
+  "client": {
+    "id": "501",
+    "name": "John Doe",
+    "contact": "+1234567890"
+  },
+  "service": {
+    "id": "301",
+    "name": "Full Body Massage",
+    "duration": 30
+  },
+  "startTime": { "hour": 10, "minute": 0 },
+  "endTime": { "hour": 11, "minute": 0 },
+  "notes": "Optional notes here"
 }
 ```
 
@@ -138,35 +118,89 @@ Create a new booking. Booking type can be either:
 
 ```json
 {
-    "success": true,
-    "message": "Appointment created successfully",
-    "appointmentId": "102"
+  "success": true,
+  "message": "Booking created successfully",
+  "bookingId": "102"
 }
 ```
 
 ---
 
-## **3. Notes for Developer**
+### **2.2 Create Blocked Time Slot**
 
-1. **Time Format:**
+**Endpoint:**
 
-   * All startTime and endTime fields use **camelCase objects**: `{ hour: int, minute: int }`.
+```
+POST /api/appointments/block
+```
 
-2. **Booking Types:**
+**Description:**
+Create a blocked time slot for a team member.
 
-   * `staff` – regular staff appointment with client and service info
-   * `customer` – regular customer booking
-   * `blocked` – blocked time slot with reason
+**Request Body Example:**
 
-3. **Filtering in GET:**
+```json
+{
+  "teamMember": {
+    "id": "105",
+    "name": "Admin",
+    "role": "Manager"
+  },
+  "startTime": { "hour": 12, "minute": 0 },
+  "endTime": { "hour": 13, "minute": 0 },
+  "reason": "Maintenance / Vacation"
+}
+```
 
-   * Use `teamMembers` (comma-separated IDs), `days`, and `startDate`
+**Response Example:**
 
-4. **Conflict Validation:**
+```json
+{
+  "success": true,
+  "message": "Blocked slot created successfully",
+  "blockId": "205"
+}
+```
 
-   * Ensure no overlapping bookings for the same teamMember
-   * Blocked slots take precedence over customer/staff bookings
+---
 
-5. **Models Reference:**
+## **3. Developer Notes**
 
-   * Use **Appointment**, **BlockingTimeSlot**, and **Vacant** models for field mapping
+### **3.1 Time Format**
+
+* All `startTime` and `endTime` fields use **camelCase objects**:
+
+  ```json
+  { "hour": 10, "minute": 30 }
+  ```
+
+### **3.2 Booking Types**
+
+| Type       | Description                                            |
+| ---------- | ------------------------------------------------------ |
+| `staff`    | Regular staff appointment with client and service info |
+| `customer` | Regular customer booking                               |
+| `blocked`  | Blocked time slot with reason                          |
+
+### **3.3 Filtering in GET**
+
+* Use `teamMembers` (comma-separated IDs), `days`, and `startDate`.
+
+### **3.4 Conflict Validation**
+
+* Ensure no overlapping bookings for the same team member.
+* Blocked slots take precedence over customer/staff bookings.
+
+### **3.5 Models Reference**
+
+* Use **Appointment**, **BlockingTimeSlot**, and **Vacant** models for field mapping.
+
+---
+
+✅ **Changes made:**
+
+1. Removed duplicated notes about time format and conflict validation.
+2. Standardized `hour` and `minute` representation to integers in all examples.
+3. Cleaned up headings and numbering for consistency.
+4. Clarified booking types in a table format.
+5. Minor wording adjustments for clarity.

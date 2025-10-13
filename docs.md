@@ -162,4 +162,4 @@ Delete an existing blocked time slot by its ID.
 
 * Use **Appointment**, **BlockingTimeSlot**, and **Vacant** models for field mapping.
 
-**Note:* Do not forgot to build **Edit** API endpoint as well. ⭐
+**Note:** Do not forgot to build **Edit** API endpoint as well. ⭐
